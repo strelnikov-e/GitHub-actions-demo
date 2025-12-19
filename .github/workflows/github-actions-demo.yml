@@ -4,9 +4,12 @@ on:
   workflow_dispatch:
     inputs:
       target_env:
-        description: "Choose environment to deploy"
-        type: environment
-        required: true
+        description: "Choose initial environment to deploy"
+        type: choise
+        options:
+        - test
+        - dev
+        - staging
       mandatory:
         description: "Mandatory installer"
         type: boolean
