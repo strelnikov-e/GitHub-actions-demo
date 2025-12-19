@@ -58,6 +58,9 @@ jobs:
   gatekeeper:
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: read
     outputs:
       mandatory_flag: ${{ steps.parse.outputs.isMandatory }}
     steps:
