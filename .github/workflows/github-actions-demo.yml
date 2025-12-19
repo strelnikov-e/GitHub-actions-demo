@@ -53,7 +53,8 @@ jobs:
   deploy-staging:
     needs: build
     runs-on: ubuntu-latest
-    environment: ${{ inputs.target_env == 'staging'}}
+    if: ${{ inputs.target_env == 'staging'}}
+    environment: staging
 
     steps:
       - name: Download artifact
