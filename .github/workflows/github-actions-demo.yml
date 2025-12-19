@@ -68,7 +68,7 @@ jobs:
         uses: trstringer/manual-approval@v1
         with:
           secret: ${{ github.token }}
-          approvers: your-github-username
+          approvers: strelnikov-e
           issue-title: "Deployment Approval Required"
           issue-body: "Please approve this deployment. To make it mandatory, ensure your comment contains 'isMandatory=true'."
 
