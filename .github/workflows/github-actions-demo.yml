@@ -54,9 +54,39 @@ jobs:
       - name: Deploy
         run: |
           echo "Deploying to ${{ inputs.target_env }}"
+
+  gatekeeper:
+    needs: build
+    runs-on: ubuntu-latest
+    outputs:
+      mandatory_flag: ${{ steps.parse.outputs.isMandatory }}
+    steps:
+      - name: Manual Approval
+        uses: trstringer/manual-approval@v1
+        with:
+          secret: ${{ github.token }}
+          approvers: your-github-username
+          issue-title: "Deployment Approval Required"
+          issue-body: "Please approve this deployment. To make it mandatory, ensure your comment contains 'isMandatory=true'."
+
+      - name: Parse Flag from Comments
+        id: parse
+        run: |
+          # Fetch the latest comment from the issue that just triggered the resume
+          # This example uses GH CLI to find if the user included the flag
+          ISSUE_NUMBER=$(gh issue list --label "manual-approval" --state open --json number -q '.[0].number')
+          COMMENT=$(gh issue view $ISSUE_NUMBER --json comments -q '.comments[-1].body')
+          
+          if [[ "$COMMENT" == *"isMandatory=true"* ]]; then
+            echo "isMandatory=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "isMandatory=false" >> "$GITHUB_OUTPUT"
+          fi
+        env:
+          GH_TOKEN: ${{ github.token }}
           
   deploy-staging:
-    needs: build
+    needs: [build, gatekeeper]
     runs-on: ubuntu-latest
     # if: |
     #   always() && 
@@ -66,6 +96,12 @@ jobs:
     environment: staging
 
     steps:
+      - name: Upload Installer
+        run: |
+          echo "Uploading with Mandatory Flag: ${{ needs.gatekeeper.outputs.mandatory_flag }}"
+          # Use the flag in your server upload command
+          ./upload-script.sh --mandatory=${{ needs.gatekeeper.outputs.mandatory_flag }}
+          
       - name: Download artifact
         uses: actions/download-artifact@v4
         with:
