@@ -56,9 +56,13 @@ jobs:
           echo "Deploying to ${{ inputs.target_env }}"
           
   deploy-staging:
-    needs: build
+    needs: build, deploy-initial
     runs-on: ubuntu-latest
-    if: ${{ inputs.target_env == 'staging'}}
+    if: |
+      always() && 
+      !cancelled() && 
+      (needs.build.result == 'success' || needs.deploy-initial.result == 'success')
+    # if: ${{ inputs.target_env == 'staging'}}
     environment: staging
 
     steps:
