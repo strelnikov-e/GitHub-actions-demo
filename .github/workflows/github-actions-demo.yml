@@ -1,21 +1,51 @@
-name: GitHub Actions Demo
-run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
-on: [push]
+name: Build and Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_env:
+        description: "Choose environment to deploy"
+        type: environment
+        required: true
+      mandatory:
+        description: "Mandatory installer"
+        type: boolean
+        default: false
+
 jobs:
-  Explore-GitHub-Actions:
+  build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: configure java SDK
-        uses: actions/setup-java@v4
+      - name: Build
+        run: |
+          mkdir dist
+          echo "my-app" > dist/app.txt
+          
+      - name: Echo inputs
+        run: |
+          echo "Is mandatory: ${{ inputs.mandatory }}
+          echo "Is mandatory: ${{ inputs.target_env }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
         with:
-          java-version: '21'
-          distribution: 'temurin'
+          name: app-build
+          path: dist/
 
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.target_env }}
 
-      - name: build with Maven
-        run: mvn -B package
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: app-build
+          path: dist/
 
-
+      - name: Deploy
+        run: |
+          echo "Deploying to ${{ inputs.target_env }}"
