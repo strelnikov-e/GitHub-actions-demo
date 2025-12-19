@@ -37,6 +37,7 @@ jobs:
   deploy-initial:
     needs: build
     runs-on: ubuntu-latest
+    if: ${{ inputs.target_env == 'dev' || inputs.target_env == 'test' }}
     environment: ${{ inputs.target_env }}
 
     steps:
