@@ -5,7 +5,7 @@ on:
     inputs:
       target_env:
         description: "Choose initial environment to deploy"
-        type: choise
+        type: choice
         options:
         - test
         - dev
