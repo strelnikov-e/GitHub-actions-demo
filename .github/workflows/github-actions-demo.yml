@@ -34,7 +34,7 @@ jobs:
           name: app-build
           path: dist/
 
-  deploy:
+  deploy-initial:
     needs: build
     runs-on: ubuntu-latest
     environment: ${{ inputs.target_env }}
@@ -49,3 +49,51 @@ jobs:
       - name: Deploy
         run: |
           echo "Deploying to ${{ inputs.target_env }}"
+          
+  deploy-staging:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.target_env == 'staging'}}
+
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: app-build
+          path: dist/
+
+      - name: Deploy
+        run: |
+          echo "Deploying to ${{ inputs.target_env }}"
+
+  deploy-preprod:
+    needs: deploy-staging
+    runs-on: ubuntu-latest
+    environment: preprod
+
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: app-build
+          path: dist/
+
+      - name: Deploy
+        run: |
+          echo "Deploying to pre-prod"
+
+  deploy-prod:
+    needs: deploy-preprod
+    runs-on: ubuntu-latest
+    environment: prod
+
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: app-build
+          path: dist/
+
+      - name: Deploy
+        run: |
+          echo "Deploying to prod"
