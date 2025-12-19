@@ -35,6 +35,7 @@ jobs:
           path: dist/
 
   deploy-initial:
+    name: Deploy ${{ inputs.target_env }}
     needs: build
     runs-on: ubuntu-latest
     if: ${{ inputs.target_env == 'dev' || inputs.target_env == 'test' }}
