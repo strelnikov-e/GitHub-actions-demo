@@ -15,14 +15,25 @@ jobs:
     runs-on: ubuntu-latest
     environment: staging
     steps:
-      - name: Download Artifact
+      - name: Get Latest Build Run ID
+        id: get-run-id
+        run: |
+          # Finds the latest successful 'Build Pipeline' run on the main branch
+          RUN_ID=$(gh run list --workflow "build.yml" --branch main --status success --limit 1 --json databaseId --jq '.[0].databaseId')
+          echo "latest_run_id=$RUN_ID" >> $GITHUB_OUTPUT
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Download Artifact from Build Workflow
         uses: actions/download-artifact@v4
         with:
           name: production-artifact
+          # This tells the action to look at the Build run, not the current one
+          run-id: ${{ steps.get-run-id.outputs.latest_run_id }}
+          github-token: ${{ github.token }}
 
       - name: Deploy
-        run: |
-          echo "Deploying to Staging. Mandatory: ${{ inputs.isMandatoryUpdate }}"
+        run: echo "Deploying artifact from run ${{ steps.get-run-id.outputs.latest_run_id }}"
 
   deploy-preprod:
     name: Deploy to Pre-Prod
