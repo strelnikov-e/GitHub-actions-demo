@@ -3,6 +3,10 @@ name: Promotional Deployment
 on:
   workflow_dispatch:
     inputs:
+      manualRunId:
+          description: 'Run ID of the build to deploy (leave blank for latest)'
+          required: false
+          type: string
       isMandatoryUpdate:
         description: 'Is this a mandatory update?'
         required: true
@@ -15,13 +19,27 @@ jobs:
     runs-on: ubuntu-latest
     environment: staging
     steps:
-      # No checkout needed for this option
-      - name: Get Latest Build Run ID
-        id: get-run-id
+      - name: Determine Run ID
+        id: select-run
         run: |
-          # We use the built-in variable GITHUB_REPOSITORY (e.g., "user/repo")
-          RUN_ID=$(gh run list --repo ${{ github.repository }} --workflow "build.yml" --branch main --status success --limit 1 --json databaseId --jq '.[0].databaseId')
-          echo "latest_run_id=$RUN_ID" >> $GITHUB_OUTPUT
+          # Check if the user provided a manual ID
+          USER_INPUT="${{ github.event.inputs.manualRunId }}"
+          
+          if [ -n "$USER_INPUT" ]; then
+            echo "Using manually provided Run ID: $USER_INPUT"
+            echo "final_run_id=$USER_INPUT" >> $GITHUB_OUTPUT
+          else
+            echo "No Run ID provided. Fetching latest successful build..."
+            RUN_ID=$(gh run list --repo ${{ github.repository }} --workflow "build.yml" --branch main --status success --limit 1 --json databaseId --jq '.[0].databaseId')
+            
+            if [ "$RUN_ID" = "null" ] || [ -z "$RUN_ID" ]; then
+              echo "Error: No successful build runs found!"
+              exit 1
+            fi
+            
+            echo "Found latest Run ID: $RUN_ID"
+            echo "final_run_id=$RUN_ID" >> $GITHUB_OUTPUT
+          fi
         env:
           GH_TOKEN: ${{ github.token }}
 
