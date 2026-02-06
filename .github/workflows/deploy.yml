@@ -1,0 +1,47 @@
+name: Promote build
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target environment"
+        required: true
+        type: choice
+        options:
+          - staging
+          - preprod
+          - prod
+
+      isMandatoryUpdate:
+        description: "Is this a mandatory update?"
+        required: true
+        type: boolean
+        default: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+
+    steps:
+      - name: Download artifact from build workflow
+        uses: actions/download-artifact@v4
+        with:
+          name: app-binary
+          path: ./artifact
+
+      - name: Show inputs
+        run: |
+          echo "Environment: ${{ inputs.environment }}"
+          echo "Mandatory update: ${{ inputs.isMandatoryUpdate }}"
+
+      - name: Deploy
+        run: |
+          if [ "${{ inputs.isMandatoryUpdate }}" = "true" ]; then
+            echo "🚨 Mandatory update enabled"
+          else
+            echo "ℹ️ Optional update"
+          fi
+
+          echo "Deploying to ${{ inputs.environment }}..."
+          ls -l ./artifact
