@@ -43,16 +43,17 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
 
-      - name: Download Artifact from Build Workflow
+      - name: Download Artifact
         uses: actions/download-artifact@v4
         with:
           name: production-artifact
-          # This tells the action to look at the Build run, not the current one
-          run-id: ${{ steps.get-run-id.outputs.latest_run_id }}
+          run-id: ${{ steps.select-run.outputs.final_run_id }}
           github-token: ${{ github.token }}
 
       - name: Deploy
-        run: echo "Deploying artifact from run ${{ steps.get-run-id.outputs.latest_run_id }}"
+        run: |
+          echo "Deploying Artifact from Run ID: ${{ steps.select-run.outputs.final_run_id }}"
+          echo "Mandatory Update: ${{ inputs.isMandatoryUpdate }}"
 
   deploy-preprod:
     name: Deploy to Pre-Prod
