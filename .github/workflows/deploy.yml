@@ -15,11 +15,12 @@ jobs:
     runs-on: ubuntu-latest
     environment: staging
     steps:
+      # No checkout needed for this option
       - name: Get Latest Build Run ID
         id: get-run-id
         run: |
-          # Finds the latest successful 'Build Pipeline' run on the main branch
-          RUN_ID=$(gh run list --workflow "build.yml" --branch main --status success --limit 1 --json databaseId --jq '.[0].databaseId')
+          # We use the built-in variable GITHUB_REPOSITORY (e.g., "user/repo")
+          RUN_ID=$(gh run list --repo ${{ github.repository }} --workflow "build.yml" --branch main --status success --limit 1 --json databaseId --jq '.[0].databaseId')
           echo "latest_run_id=$RUN_ID" >> $GITHUB_OUTPUT
         env:
           GH_TOKEN: ${{ github.token }}
