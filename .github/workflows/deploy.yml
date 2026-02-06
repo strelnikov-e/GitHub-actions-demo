@@ -3,6 +3,14 @@ name: Promote build
 on:
   workflow_dispatch:
     inputs:
+      buildRunId:
+        description: "Build workflow run ID"
+        required: true
+      isMandatoryUpdate:
+        description: "Is mandatory update"
+        required: true
+        type: boolean
+        default: false
       environment:
         description: "Target environment"
         required: true
@@ -11,12 +19,6 @@ on:
           - staging
           - preprod
           - prod
-
-      isMandatoryUpdate:
-        description: "Is this a mandatory update?"
-        required: true
-        type: boolean
-        default: false
 
 jobs:
   deploy:
