@@ -20,16 +20,22 @@ on:
           - preprod
           - prod
 
+permissions:
+  actions: read
+  contents: read
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
 
     steps:
-      - name: Download artifact from build workflow
+      - name: Download build artifact
         uses: actions/download-artifact@v4
         with:
           name: app-binary
+          repository: strelnikov-e/GitHub-actions-demo
+          run-id: ${{ inputs.buildRunId }}
           path: ./artifact
 
       - name: Show inputs
