@@ -1,55 +1,56 @@
-name: Promote build
+name: Promotional Deployment
 
 on:
   workflow_dispatch:
     inputs:
-      buildRunId:
-        description: "Build workflow run ID"
-        required: true
       isMandatoryUpdate:
-        description: "Is mandatory update"
+        description: 'Is this a mandatory update?'
         required: true
         type: boolean
         default: false
-      environment:
-        description: "Target environment"
-        required: true
-        type: choice
-        options:
-          - staging
-          - preprod
-          - prod
-
-permissions:
-  actions: read
-  contents: read
 
 jobs:
-  deploy:
+  deploy-staging:
+    name: Deploy to Staging
     runs-on: ubuntu-latest
-    environment: ${{ inputs.environment }}
-
+    environment: staging
     steps:
-      - name: Download build artifact
+      - name: Download Artifact
         uses: actions/download-artifact@v4
         with:
-          name: app-binary
-          repository: strelnikov-e/GitHub-actions-demo
-          run-id: ${{ inputs.buildRunId }}
-          path: ./artifact
-
-      - name: Show inputs
-        run: |
-          echo "Environment: ${{ inputs.environment }}"
-          echo "Mandatory update: ${{ inputs.isMandatoryUpdate }}"
+          name: production-artifact
 
       - name: Deploy
-        run: |
-          if [ "${{ inputs.isMandatoryUpdate }}" = "true" ]; then
-            echo "🚨 Mandatory update enabled"
-          else
-            echo "ℹ️ Optional update"
-          fi
+        run: echo "Deploying to Staging. Mandatory: ${{ inputs.isMandatoryUpdate }}"
 
-          echo "Deploying to ${{ inputs.environment }}..."
-          ls -l ./artifact
+  deploy-preprod:
+    name: Deploy to Pre-Prod
+    needs: deploy-staging
+    runs-on: ubuntu-latest
+    environment: preprod
+    steps:
+      - name: Download Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: production-artifact
+
+      - name: Deploy
+        run: echo "Deploying to Pre-Prod..."
+
+  deploy-prod:
+    name: Deploy to Production
+    needs: deploy-preprod
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Download Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: production-artifact
+
+      - name: Final Deploy
+        run: |
+          echo "Deploying to Production"
+          if [ "${{ inputs.isMandatoryUpdate }}" = "true" ]; then
+            echo "Executing high-priority migration scripts..."
+          fi
