@@ -21,7 +21,8 @@ jobs:
           name: production-artifact
 
       - name: Deploy
-        run: echo "Deploying to Staging. Mandatory: ${{ inputs.isMandatoryUpdate }}"
+        run: |
+          echo "Deploying to Staging. Mandatory: ${{ inputs.isMandatoryUpdate }}"
 
   deploy-preprod:
     name: Deploy to Pre-Prod
