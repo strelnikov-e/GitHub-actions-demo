@@ -81,7 +81,9 @@ jobs:
           INSTALLER_FILE_NAME=${INSTALLER_PRODUCT_NAME}-${CLEAN_VERSION}.exe
 
           echo "VERSION=${CLEAN_VERSION}" >> $GITHUB_ENV
+          echo "VERSION=${CLEAN_VERSION}" >> $GITHUB_OUTPUT
           echo "INSTALLER_FILE_NAME=${INSTALLER_FILE_NAME}" >> $GITHUB_ENV
+          echo "INSTALLER_FILE_NAME=${INSTALLER_FILE_NAME}" >> $GITHUB_OUTPUT
           echo "Installer to deploy: $INSTALLER_FILE_NAME"
           echo "environment? ${{ github.event.inputs.deployEnvironment }}"
           echo "Is mandatory? ${{ github.event.inputs.mandatory }}"
